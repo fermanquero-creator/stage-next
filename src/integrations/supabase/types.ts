@@ -14,7 +14,212 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      artists: {
+        Row: {
+          bio: string
+          city: string
+          contact_email: string | null
+          created_at: string
+          genre: string
+          id: string
+          instagram: string | null
+          photo_url: string | null
+          stage_name: string
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          bio?: string
+          city?: string
+          contact_email?: string | null
+          created_at?: string
+          genre?: string
+          id?: string
+          instagram?: string | null
+          photo_url?: string | null
+          stage_name: string
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          bio?: string
+          city?: string
+          contact_email?: string | null
+          created_at?: string
+          genre?: string
+          id?: string
+          instagram?: string | null
+          photo_url?: string | null
+          stage_name?: string
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          artist_id: string
+          city: string
+          created_at: string
+          event_date: string
+          id: string
+          ticket_link: string | null
+          title: string
+          user_id: string
+          venue: string
+        }
+        Insert: {
+          artist_id: string
+          city?: string
+          created_at?: string
+          event_date: string
+          id?: string
+          ticket_link?: string | null
+          title: string
+          user_id: string
+          venue?: string
+        }
+        Update: {
+          artist_id?: string
+          city?: string
+          created_at?: string
+          event_date?: string
+          id?: string
+          ticket_link?: string | null
+          title?: string
+          user_id?: string
+          venue?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_items: {
+        Row: {
+          artist_id: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          link: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          link?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          link?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_items_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      releases: {
+        Row: {
+          artist_id: string
+          cover_url: string | null
+          created_at: string
+          id: string
+          release_type: string
+          title: string
+          user_id: string
+          year: number | null
+        }
+        Insert: {
+          artist_id: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          release_type?: string
+          title: string
+          user_id: string
+          year?: number | null
+        }
+        Update: {
+          artist_id?: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          release_type?: string
+          title?: string
+          user_id?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "releases_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      songs: {
+        Row: {
+          artist_id: string
+          audio_url: string
+          created_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          artist_id: string
+          audio_url: string
+          created_at?: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          artist_id?: string
+          audio_url?: string
+          created_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "songs_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
