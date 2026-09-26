@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+const fail = (m: string): void => { toast.error(m); };
 import { z } from "zod";
 import { Eye, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,13 +89,13 @@ function ProfileForm({ userId, artist, onSaved }: { userId: string; artist: Arti
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState(artist?.photo_url ?? "");
   const [busy, setBusy] = useState(false);
-  useEffect(() => { if (photo) { const u = URL.createObjectURL(photo); setPreview(u); return () => URL.revokeObjectURL(u); } }, [photo]);
+  useEffect(() => { if (!photo) return undefined; const u = URL.createObjectURL(photo); setPreview(u); return () => URL.revokeObjectURL(u); }, [photo]);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
     const p = profileSchema.safeParse(f);
-    if (!p.success) return toast.error(p.error.issues[0].message);
+    if (!p.success) return fail(p.error.issues[0]?.message ?? "Datos no válidos");
     setBusy(true);
     try {
       const photo_url = photo ? await uploadMedia(userId, photo, "photos") : artist?.photo_url ?? null;
@@ -141,6 +142,8 @@ function ProfileForm({ userId, artist, onSaved }: { userId: string; artist: Arti
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Item = any;
 type Table = "songs" | "releases" | "portfolio_items" | "events";
 
 function useItems(table: Table, artistId: string) {
@@ -151,7 +154,7 @@ function useItems(table: Table, artistId: string) {
     queryFn: async () => {
       const { data, error } = await supabase.from(table).select("*").eq("artist_id", artistId).order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Record<string, any>[];
+      return data as Item[];
     },
   });
   const refresh = () => { qc.invalidateQueries({ queryKey: key }); qc.invalidateQueries({ queryKey: ["artist", artistId] }); };
@@ -162,7 +165,7 @@ function useItems(table: Table, artistId: string) {
   return { items: q.data ?? [], refresh, remove };
 }
 
-function ItemList({ items, render, onRemove }: { items: Record<string, any>[]; render: (i: Record<string, any>) => React.ReactNode; onRemove: (id: string) => void }) {
+function ItemList({ items, render, onRemove }: { items: Item[]; render: (i: Item) => React.ReactNode; onRemove: (id: string) => void }) {
   if (!items.length) return <p className="text-sm text-muted-foreground">Todavía no has agregado nada.</p>;
   return (
     <ul className="space-y-2">
@@ -192,8 +195,8 @@ function Songs({ userId, artistId }: { userId: string; artistId: string }) {
   const [busy, setBusy] = useState(false);
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || title.length > 120) return toast.error("Escribe un título válido");
-    if (!file || !file.type.startsWith("audio/")) return toast.error("Selecciona un archivo de audio");
+    if (!title.trim() || title.length > 120) return fail("Escribe un título válido");
+    if (!file || !file.type.startsWith("audio/")) return fail("Selecciona un archivo de audio");
     setBusy(true);
     try {
       const audio_url = await uploadMedia(userId, file, "songs");
@@ -223,9 +226,9 @@ function Releases({ userId, artistId }: { userId: string; artistId: string }) {
   const [busy, setBusy] = useState(false);
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (!f.title.trim()) return toast.error("Escribe un título");
+    if (!f.title.trim()) return fail("Escribe un título");
     const year = f.year ? Number(f.year) : null;
-    if (year !== null && (isNaN(year) || year < 1900 || year > 2100)) return toast.error("Año no válido");
+    if (year !== null && (isNaN(year) || year < 1900 || year > 2100)) return fail("Año no válido");
     setBusy(true);
     try {
       const cover_url = cover ? await uploadMedia(userId, cover, "covers") : null;
@@ -265,8 +268,8 @@ function Portfolio({ userId, artistId }: { userId: string; artistId: string }) {
   const [busy, setBusy] = useState(false);
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (!f.title.trim()) return toast.error("Escribe un título");
-    if (f.link && !urlOpt.safeParse(f.link).success) return toast.error("Enlace no válido");
+    if (!f.title.trim()) return fail("Escribe un título");
+    if (f.link && !urlOpt.safeParse(f.link).success) return fail("Enlace no válido");
     setBusy(true);
     try {
       const image_url = img ? await uploadMedia(userId, img, "portfolio") : null;
@@ -296,13 +299,13 @@ function Events({ userId, artistId }: { userId: string; artistId: string }) {
   const [f, setF] = useState({ title: "", venue: "", city: "", event_date: "", ticket_link: "" });
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (!f.title.trim() || !f.event_date) return toast.error("Título y fecha son obligatorios");
-    if (f.ticket_link && !urlOpt.safeParse(f.ticket_link).success) return toast.error("Enlace no válido");
+    if (!f.title.trim() || !f.event_date) return fail("Título y fecha son obligatorios");
+    if (f.ticket_link && !urlOpt.safeParse(f.ticket_link).success) return fail("Enlace no válido");
     const { error } = await supabase.from("events").insert({
       title: f.title.trim().slice(0, 120), venue: f.venue.trim().slice(0, 120), city: f.city.trim().slice(0, 80),
       event_date: new Date(f.event_date).toISOString(), ticket_link: f.ticket_link || null, artist_id: artistId, user_id: userId,
     });
-    if (error) return toast.error(error.message);
+    if (error) return fail(error.message);
     setF({ title: "", venue: "", city: "", event_date: "", ticket_link: "" }); refresh();
   }
   return (
