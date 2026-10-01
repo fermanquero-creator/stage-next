@@ -21,7 +21,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
         <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold">
-          <Disc3 className="h-6 w-6 text-primary" /> Emerge
+          <img src="/IMG_0350.jpeg" alt="Emerge" className="h-6 w-6 rounded-full object-cover" /> Emerge
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link to="/explorar" className="rounded-full px-3 py-2 text-sm font-medium hover:bg-secondary" activeProps={{ className: "text-primary" }}>
